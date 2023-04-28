@@ -1,0 +1,244 @@
+package agenda.model;
+
+import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import agenda.exceptions.ContactoException;
+
+public class Agenda implements Serializable {
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
+	private String nombre;
+	private Contacto[] listaContactos;
+	private Grupo[] listaGrupos;
+	private Reunion[] listaReuniones;
+
+	public Agenda(String nombre, int numeroContactos, int numeroGrupos, int numeroReuniones) {
+		super();
+		this.nombre = nombre;
+		this.listaContactos = new Contacto[numeroContactos];
+		this.listaGrupos = new Grupo[numeroGrupos];
+		this.listaReuniones = new Reunion[numeroReuniones];
+	}
+
+	public Agenda() {
+		super();
+	}
+
+	public String getNombre() {
+		return nombre;
+	}
+
+	public void setNombre(String nombre) {
+		this.nombre = nombre;
+	}
+
+	public Contacto[] getListaContactos() {
+		return listaContactos;
+	}
+
+	public void setListaContactos(Contacto[] listaContactos) {
+		this.listaContactos = listaContactos;
+	}
+
+	public Grupo[] getListaGrupos() {
+		return listaGrupos;
+	}
+
+	public void setListaGrupos(Grupo[] listaGrupos) {
+		this.listaGrupos = listaGrupos;
+	}
+
+	public Reunion[] getListaReuniones() {
+		return listaReuniones;
+	}
+
+	public void setListaReuniones(Reunion[] listaReuniones) {
+		this.listaReuniones = listaReuniones;
+	}
+
+	@Override
+	public String toString() {
+		return "Agenda [nombre=" + nombre + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((nombre == null) ? 0 : nombre.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Agenda other = (Agenda) obj;
+		if (nombre == null) {
+			if (other.nombre != null)
+				return false;
+		} else if (!nombre.equals(other.nombre))
+			return false;
+		return true;
+	}
+
+	public void agregarContacto(Contacto newContacto) throws ContactoException {
+		// Busca el contacto en la lista
+		Contacto contacto = Arrays.stream(listaContactos).filter(c -> c != null).filter(c -> c.equals(newContacto))
+				.findFirst().orElse(null);
+		// Si ya existe se lanza una excepcion
+		if (contacto != null) {
+			throw new ContactoException("El contacto ya existe");
+		}
+		// Si no existe se busca la primera posicion disponible
+		int posDisponible = IntStream.range(0, listaContactos.length).filter(i -> listaContactos[i] == null).findFirst()
+				.orElse(-1);
+		// Si la agenda estïa llena se lanza una excepcion
+		if (posDisponible == -1) {
+			throw new ContactoException("Agenda llena");
+		}
+		// Si hay posiciones disponibles se añade el nuevo contacto
+		listaContactos[posDisponible] = newContacto;
+	}
+
+	public boolean existeContacto(Contacto contacto) {
+		// Se Busca el contacto en la lista
+		return Arrays.stream(listaContactos).anyMatch(c -> c != null && c.equals(contacto));
+	}
+
+	public void listarContactos() {
+		// Se imprime "Lista de contactos"
+		System.out.println("Lista de contactos:");
+		// Se Recorre la lista de contactos y se imprime
+		Arrays.stream(listaContactos).filter(c -> c != null).forEach(System.out::println);
+	}
+
+	public String buscaContacto(String nombre) {
+		// Se Busca el contacto por nombre
+		Optional<Contacto> contacto = Arrays.stream(listaContactos).filter(c -> c != null)
+				.filter(c -> c.getNombre().equalsIgnoreCase(nombre)).findFirst();
+		// Si se encuentra el contacto se retorna su telefono
+		if (contacto.isPresent()) {
+			return "Telefono de " + nombre + ": " + contacto.get().getTelefono();
+		}
+		// Si no se encuentra el contacto, se devuelve un mensaje indicando que no
+		// se encontro
+		else {
+			return "No se encontro el contacto.";
+		}
+	}
+
+	public void eliminarContacto(Contacto contacto) {
+		// Se Busca la posiciï¿½n del contacto en la lista
+		int index = IntStream.range(0, listaContactos.length)
+				.filter(i -> listaContactos[i] != null && listaContactos[i].equals(contacto)).findFirst().orElse(-1);
+		// Si se encontro el contacto se elimina de la lista
+		// Si no se encontro, se imprime un mensaje indicando que no se
+		// encontro el contacto
+		if (index != -1) {
+			listaContactos[index] = null;
+			System.out.println("Contacto eliminado correctamente.");
+		} else {
+			System.out.println("No se encontro el contacto.");
+		}
+	}
+
+	public boolean agendaLlena() {
+		// Se Verifica si existe algïen contacto en la lista que sea null Si hay
+		// al menos un contacto null, la agenda no esta llena
+		// Si todos los contactos son distintos de null, la agenda esta llena
+		return Arrays.stream(listaContactos).allMatch(Objects::nonNull);
+	}
+
+	public int huecosLibres() {
+		// Se Cuenta el numero de contactos que son null en la lista
+		// Este numero representa la cantidad de huecos libres en la agenda
+		return (int) Arrays.stream(listaContactos).filter(Objects::isNull).count();
+	}
+
+	// ---------------------------------------Preparcial----------------------------------------------------------------
+	// metodo que obtiene un arreglo con los contactos de telefono que sea
+	// capicua
+	public Contacto[] obtenerContactosCapicua() {
+		// Obtener un Stream de los contactos
+		Stream<Contacto> streamContactos = Arrays.stream(listaContactos);
+
+		// Filtrar los contactos cuyo numero de telefono es capicua
+		Contacto contactosCapicua[] = streamContactos.filter(contacto -> {
+			String telefono = contacto.getTelefono();
+			return telefono.equals(new StringBuilder(telefono).reverse().toString());
+		}).toArray(Contacto[]::new);
+
+		return contactosCapicua;
+	}
+
+	// metodo que retorna los grupos que sean de oficina y tengan todos sus
+	// contactos con direccion igual a calle 2 numero 18-00
+	public ArrayList<Grupo> obtenerGruposDeOficinaConDireccion() {
+		ArrayList<Grupo> gruposConDireccion = new ArrayList<>();
+		for (Grupo grupo : listaGrupos) {
+			if (grupo.getCategoria() == Categoria.OFICINA && Arrays.stream(grupo.getListaContactos())
+					.allMatch(contacto -> contacto.getDireccion().equals("calle 2 numero 18-00"))) {
+				gruposConDireccion.add(grupo);
+			}
+		}
+		return gruposConDireccion;
+	}
+//Realizar las operaciones necesarias para retornar una matriz con las reuniones cada fila
+//representa un conjunto de reuniones
+	public Reunion[][] obtenerReunionesPorFecha() {
+	    // Crear una matriz de reuniones de tamaño 3xN
+	    Reunion[][] reunionesPorFecha = new Reunion[3][N];
+	    // Inicializar todos los elementos de la matriz con objetos de tipo Reunion
+	    for (int i = 0; i < 3; i++) {
+	        for (int j = 0; j < N; j++) {
+	            reunionesPorFecha[i][j] = new Reunion("", "");
+	        }
+	    }
+	    // Iterar sobre todas las reuniones de la agenda y agregarlas a la matriz por fecha
+	    for (Reunion reunion : listaReuniones) {
+	        // Obtener la fecha de la reunión como una cadena de texto
+	        String fechaReunion = reunion.getFecha();
+
+	        // Agregar la reunión a la fila correspondiente según su fecha
+	        if (fechaReunion.compareTo("01-11-2022") >= 0 && fechaReunion.compareTo("30-11-2022") <= 0) {
+	            // Agregar la reunión a la fila 0
+	            agregarReunion(reunion, reunionesPorFecha[0]);
+	        } else if (fechaReunion.compareTo("01-12-2022") >= 0 && fechaReunion.compareTo("31-12-2022") <= 0) {
+	            // Agregar la reunión a la fila 1
+	            agregarReunion(reunion, reunionesPorFecha[1]);
+	        } else {
+	            // Agregar la reunión a la fila 2
+	            agregarReunion(reunion, reunionesPorFecha[2]);
+	        }
+	    }
+	    // Devolver la matriz con las reuniones separadas por fecha
+	    return reunionesPorFecha;
+	}
+
+	private void agregarReunion(Reunion reunion, Reunion[] fila) {
+	    for (int i = 0; i < fila.length; i++) {
+	        if (fila[i].getDescripcion().equals("")) {
+	            fila[i] = reunion;
+	            break;
+	        }
+	    }
+	}
+}
+
+}

@@ -1,0 +1,2 @@
+El diagrama de clases esta en https://app.diagrams.net/ 
+sube el archivo que esta en la misma carpeta

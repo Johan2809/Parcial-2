@@ -1,0 +1,8 @@
+package agenda.model;
+
+public class Nota {
+	private String codigo;
+	private String fecha;
+	private String comentarios;
+	private CategoriaNotas categoria;
+}

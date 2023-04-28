@@ -1,0 +1,6 @@
+package agenda.model;
+
+public class Grupo {
+	private String nombre;
+	Categoria categoria;
+}

@@ -1,0 +1,202 @@
+package agenda.model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
+import agenda.exceptions.ContactoException;
+
+public class Agenda implements Serializable {
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
+	private String nombre;
+	private Contacto[] listaContactos;
+	private Grupo[] listaGrupos;
+	private Reunion[] listaReuniones;
+
+	public Agenda(String nombre, int numeroContactos, int numeroGrupos, int numeroReuniones) {
+		super();
+		this.nombre = nombre;
+		this.listaContactos = new Contacto[numeroContactos];
+		this.listaGrupos = new Grupo[numeroGrupos];
+		this.listaReuniones = new Reunion[numeroReuniones];
+	}
+
+	public Agenda() {
+		super();
+	}
+
+	public String getNombre() {
+		return nombre;
+	}
+
+	public void setNombre(String nombre) {
+		this.nombre = nombre;
+	}
+
+	public Contacto[] getListaContactos() {
+		return listaContactos;
+	}
+
+	public void setListaContactos(Contacto[] listaContactos) {
+		this.listaContactos = listaContactos;
+	}
+
+	public Grupo[] getListaGrupos() {
+		return listaGrupos;
+	}
+
+	public void setListaGrupos(Grupo[] listaGrupos) {
+		this.listaGrupos = listaGrupos;
+	}
+
+	public Reunion[] getListaReuniones() {
+		return listaReuniones;
+	}
+
+	public void setListaReuniones(Reunion[] listaReuniones) {
+		this.listaReuniones = listaReuniones;
+	}
+
+	@Override
+	public String toString() {
+		return "Agenda [nombre=" + nombre + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((nombre == null) ? 0 : nombre.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Agenda other = (Agenda) obj;
+		if (nombre == null) {
+			if (other.nombre != null)
+				return false;
+		} else if (!nombre.equals(other.nombre))
+			return false;
+		return true;
+	}
+
+	public void agregarContacto(Contacto newContacto) throws ContactoException {
+		// Busca el contacto en la lista
+		Contacto contacto = Arrays.stream(listaContactos).filter(c -> c != null).filter(c -> c.equals(newContacto)).findFirst().orElse(null);
+		// Si ya existe se lanza una excepcion
+		if (contacto != null) {
+			throw new ContactoException("El contacto ya existe");
+		}
+		// Si no existe se busca la primera posici�n disponible
+		int posDisponible = IntStream.range(0, listaContactos.length).filter(i -> listaContactos[i] == null).findFirst().orElse(-1);
+		// Si la agenda est� llena se lanza una excepci�n
+		if (posDisponible == -1) {
+			throw new ContactoException("Agenda llena");
+		}
+		// Si hay posiciones disponibles se a�ade el nuevo contacto
+		listaContactos[posDisponible] = newContacto;
+	}
+
+	public boolean existeContacto(Contacto contacto) {
+	    // Se Busca el contacto en la lista
+	    return Arrays.stream(listaContactos).anyMatch(c -> c != null && c.equals(contacto));
+	}
+
+	public void listarContactos() {
+		// Se imprime "Lista de contactos"
+		System.out.println("Lista de contactos:");
+		// Se Recorre la lista de contactos y se imprime
+		Arrays.stream(listaContactos).filter(c -> c != null).forEach(System.out::println);
+	}
+
+	public String buscaContacto(String nombre) {
+		// Se Busca el contacto por nombre
+		Optional<Contacto> contacto = Arrays.stream(listaContactos).filter(c -> c != null).filter(c -> c.getNombre().equalsIgnoreCase(nombre)).findFirst();
+		// Si se encuentra el contacto se retorna su tel�fono
+		if (contacto.isPresent()) {
+			return "Tel�fono de " + nombre + ": " + contacto.get().getTelefono();
+		}
+		// Si no se encuentra el contacto, se devuelve un mensaje indicando que no
+		// se encontr�
+		else {
+			return "No se encontr� el contacto.";
+		}
+	}
+
+	public void eliminarContacto(Contacto contacto) {
+		//	Se Busca la posici�n del contacto en la lista
+		int index = IntStream.range(0, listaContactos.length)
+				.filter(i -> listaContactos[i] != null && listaContactos[i].equals(contacto)).findFirst().orElse(-1);
+		// Si se encontr� el contacto se elimina de la lista
+		// Si no se encontr�, se imprime un mensaje indicando que no se encontr� el contacto
+		if (index != -1) {
+			listaContactos[index] = null;
+			System.out.println("Contacto eliminado correctamente.");
+		} else {
+			System.out.println("No se encontr� el contacto.");
+		}
+	}
+
+	public boolean agendaLlena() {
+		// Se Verifica si existe alg�n contacto en la lista que sea null Si hay
+		// al menos un contacto null, la agenda no est� llena
+		// Si todos los contactos son distintos de null, la agenda est� llena
+		return Arrays.stream(listaContactos).allMatch(Objects::nonNull);
+	}
+
+	public int huecosLibres() {
+		// Se Cuenta el n�mero de contactos que son null en la lista
+		// Este n�mero representa la cantidad de huecos libres en la agenda
+		return (int) Arrays.stream(listaContactos).filter(Objects::isNull).count();
+	}
+
+//---------------------------------------------------Preparcial------------------------------------------------
+public Contacto[] obtenerContactosCapicua() {
+    // Obtener un Stream de los contactos
+    Stream<Contacto> streamContactos = Arrays.stream(listaContactos);
+    
+    // Filtrar los contactos cuyo número de teléfono es capicúa
+    Contacto contactosCapicua[] = streamContactos.filter(contacto -> {
+        String telefono = contacto.getTelefono();
+        return telefono.equals(new StringBuilder(telefono).reverse().toString());
+    }).toArray(Contacto[]::new);
+    
+    return contactosCapicua;
+}
+public ArrayList<Grupo> obtenerGruposDeOficinaConDireccion() {
+    ArrayList<Grupo> gruposConDireccion = new ArrayList<>();
+    
+    for (Grupo grupo : listaGrupos) {
+        if (grupo.getCategoria() == Categoria.OFICINA) {
+            boolean todosTienenDireccion = true;
+            for (Contacto contacto : grupo.getListaContactos()) {
+                if (!contacto.getDireccion().equals("calle 2 numero 18-00")) {
+                    todosTienenDireccion = false;
+                    break;
+                }
+            }
+            if (todosTienenDireccion) {
+                gruposConDireccion.add(grupo);
+            }
+        }
+    }
+    
+    return gruposConDireccion;
+}
+
+}
