@@ -1,5 +1,8 @@
 package agenda.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Nota {
 	private String codigo;
 	private String fecha;
@@ -39,5 +42,17 @@ public class Nota {
 	}
 	private CategoriaNotas categoriaNotas;
 
+//-------------------------------------PARCIAL--------------------------------------------------------
+
+	public ArrayList<String> buscarPalabrasPorLetra(char letra) {
+		 List<String> palabrasEncontradas = new ArrayList<>();
+		    String[] TodasLaspalabras = this.comentarios.split(" ");
+		    for (String palabra : TodasLaspalabras) {
+		        if (palabra.toLowerCase().startsWith(Character.toString(letra).toLowerCase())) {
+		            palabrasEncontradas.add(palabra);
+		        }
+		    }
+		    return (ArrayList<String>) palabrasEncontradas;
+		}
 
 }

@@ -1,0 +1,234 @@
+package agenda.model;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import agenda.exceptions.ContactoException;
+
+public class Agenda implements Serializable {
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1L;
+	private String nombre;
+	private Contacto[] listaContactos;
+	public Grupo[] listaGrupos;
+	private Reunion[] listaReuniones;
+	private Nota[] listaNotas;
+
+	public Agenda(String nombre, int numeroContactos, int numeroGrupos, int numeroReuniones) {
+		super();
+		this.nombre = nombre;
+		this.listaContactos = new Contacto[numeroContactos];
+		this.listaGrupos = new Grupo[numeroGrupos];
+		this.listaReuniones = new Reunion[numeroReuniones];
+	}
+
+	public Agenda() {
+		super();
+	}
+
+	public String getNombre() {
+		return nombre;
+	}
+
+	public void setNombre(String nombre) {
+		this.nombre = nombre;
+	}
+
+	public Contacto[] getListaContactos() {
+		return listaContactos;
+	}
+
+	public void setListaContactos(Contacto[] listaContactos) {
+		this.listaContactos = listaContactos;
+	}
+
+	public Grupo[] getListaGrupos() {
+		return listaGrupos;
+	}
+
+	public void setListaGrupos(Grupo[] listaGrupos) {
+		this.listaGrupos = listaGrupos;
+	}
+
+	public Reunion[] getListaReuniones() {
+		return listaReuniones;
+	}
+
+	public void setListaReuniones(Reunion[] listaReuniones) {
+		this.listaReuniones = listaReuniones;
+	}
+
+	@Override
+	public String toString() {
+		return "Agenda [nombre=" + nombre + "]";
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((nombre == null) ? 0 : nombre.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Agenda other = (Agenda) obj;
+		if (nombre == null) {
+			if (other.nombre != null)
+				return false;
+		} else if (!nombre.equals(other.nombre))
+			return false;
+		return true;
+	}
+
+	public void agregarContacto(Contacto newContacto) throws ContactoException {
+		// Busca el contacto en la lista
+		Contacto contacto = Arrays.stream(listaContactos).filter(c -> c != null).filter(c -> c.equals(newContacto))
+				.findFirst().orElse(null);
+		// Si ya existe se lanza una excepcion
+		if (contacto != null) {
+			throw new ContactoException("El contacto ya existe");
+		}
+		// Si no existe se busca la primera posicion disponible
+		int posDisponible = IntStream.range(0, listaContactos.length).filter(i -> listaContactos[i] == null).findFirst()
+				.orElse(-1);
+		// Si la agenda estïa llena se lanza una excepcion
+		if (posDisponible == -1) {
+			throw new ContactoException("Agenda llena");
+		}
+		// Si hay posiciones disponibles se añade el nuevo contacto
+		listaContactos[posDisponible] = newContacto;
+	}
+
+	public boolean existeContacto(Contacto contacto) {
+		// Se Busca el contacto en la lista
+		return Arrays.stream(listaContactos).anyMatch(c -> c != null && c.equals(contacto));
+	}
+
+	public void listarContactos() {
+		// Se imprime "Lista de contactos"
+		System.out.println("Lista de contactos:");
+		// Se Recorre la lista de contactos y se imprime
+		Arrays.stream(listaContactos).filter(c -> c != null).forEach(System.out::println);
+	}
+
+	public String buscaContacto(String nombre) {
+		// Se Busca el contacto por nombre
+		Optional<Contacto> contacto = Arrays.stream(listaContactos).filter(c -> c != null)
+				.filter(c -> c.getNombre().equalsIgnoreCase(nombre)).findFirst();
+		// Si se encuentra el contacto se retorna su telefono
+		if (contacto.isPresent()) {
+			return "Telefono de " + nombre + ": " + contacto.get().getTelefono();
+		}
+		// Si no se encuentra el contacto, se devuelve un mensaje indicando que
+		// no
+		// se encontro
+		else {
+			return "No se encontro el contacto.";
+		}
+	}
+
+	public void eliminarContacto(Contacto contacto) {
+		// Se Busca la posiciï¿½n del contacto en la lista
+		int index = IntStream.range(0, listaContactos.length)
+				.filter(i -> listaContactos[i] != null && listaContactos[i].equals(contacto)).findFirst().orElse(-1);
+		// Si se encontro el contacto se elimina de la lista
+		// Si no se encontro, se imprime un mensaje indicando que no se
+		// encontro el contacto
+		if (index != -1) {
+			listaContactos[index] = null;
+			System.out.println("Contacto eliminado correctamente.");
+		} else {
+			System.out.println("No se encontro el contacto.");
+		}
+	}
+
+	public boolean agendaLlena() {
+		// Se Verifica si existe algïen contacto en la lista que sea null Si hay
+		// al menos un contacto null, la agenda no esta llena
+		// Si todos los contactos son distintos de null, la agenda esta llena
+		return Arrays.stream(listaContactos).allMatch(Objects::nonNull);
+	}
+
+	public int huecosLibres() {
+		// Se Cuenta el numero de contactos que son null en la lista
+		// Este numero representa la cantidad de huecos libres en la agenda
+		return (int) Arrays.stream(listaContactos).filter(Objects::isNull).count();
+	}
+
+	// -------------------------------------PARCIAL------------------------------------------------------
+	// PUNTO 1:obtener un arreglo de String con las palabras que cumplan las
+	// siguientes condiocnes.
+	// se debe Implementar un método en la clase Nota que busque todas las
+	// palabras de un comentario
+	// que empiecen con una determinada letra. El método debe recibir como
+	// parámetro la letra a buscar
+	// y devolver una lista con las palabras encontradas.
+
+	public List<String> buscarPalabrasPorLetra(char letra) {
+		List<String> palabrasEncontradas = new ArrayList<>();
+		for (Nota nota : this.listaNotas) {
+			palabrasEncontradas.addAll(nota.buscarPalabrasPorLetra(letra));
+		}
+		return palabrasEncontradas;
+	}
+
+	// PUNTO 2: Crea un método que reciba como parámetro un objeto Grupo
+	// y que devuelva una lista de contactos que pertenezcan a ese grupo
+
+	public List<Contacto> filtrarPorGrupo(Grupo grupo) {
+	    return Arrays.stream(listaContactos)
+	            .filter(contacto -> Arrays.asList(contacto.getListaGrupos()).contains(grupo))
+	            .collect(Collectors.toList());
+	}
+
+	// PUNTO 3: Realizar las operaciones necesarias para retornar una matriz
+	// con las notas cada fila representa un conjunto de notas
+	public Nota[][] obtenerNotasMatriz() {
+	    Nota[][] notas = new Nota[3][listaNotas.length];
+	    int[] contadorFilas = new int[3]; // contador de notas agregadas a cada fila
+	    for (int i = 0; i < listaNotas.length; i++) {
+	        String fechaNota = listaNotas[i].getFecha();
+	        if (fechaNota.compareTo("01-11-2022") >= 0 && fechaNota.compareTo("30-11-2022") <= 0) {
+	            // Agregar la nota a la fila 0
+	            notas[0][contadorFilas[0]] = listaNotas[i];
+	            contadorFilas[0]++;
+	        } else if (fechaNota.compareTo("01-12-2022") >= 0 && fechaNota.compareTo("31-12-2022") <= 0) {
+	            // Agregar la nota a la fila 1
+	            notas[1][contadorFilas[1]] = listaNotas[i];
+	            contadorFilas[1]++;
+	        } else {
+	            // Agregar la nota a la fila 2
+	            notas[2][contadorFilas[2]] = listaNotas[i];
+	            contadorFilas[2]++;
+	        }
+	    }
+	    return notas;
+	}
+
+	// PUNTO 4:Buscar todos los contactos que tengan un número de teléfono que
+	// comience con un determinado prefijo. El método debe recibir como parámetro un
+	// String con el prefijO y devolver una lista de grupos con los contactos encontrados .
+
+	public List<Contacto> obtenerContactosPorPrefijo(String prefijo) {
+		List<Contacto> contactosConPrefijo = Arrays.stream(listaContactos)
+				.filter(contacto -> contacto.getTelefono().startsWith(prefijo)).collect(Collectors.toList());
+		return contactosConPrefijo;
+	}
+}

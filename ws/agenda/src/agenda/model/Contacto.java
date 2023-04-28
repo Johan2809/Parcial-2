@@ -1,8 +1,5 @@
 package agenda.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public class Contacto {
 	private String nombre;
@@ -11,7 +8,7 @@ public class Contacto {
 	private String telefono;
 	private String email;
 
-	private Grupo[] listaGrupos;
+	public Grupo[] listaGrupos;
 	private Reunion[] listaReuniones;
 
 	public Contacto() {
@@ -141,23 +138,4 @@ public class Contacto {
 				+ "\nEmail: " + email;
 	}
 
-	// -----------------------------------------------Preparcial----------------------------------------------------------------------
-	// Eliminar los contactos que tengan en su nombre las 5 vocales
-	public static void eliminarContactosConCincoVocales(Contacto[] contactos) {
-		List<Contacto> listaContactos = new ArrayList<>(Arrays.asList(contactos));
-		for (Contacto contacto : listaContactos) {
-			String nombre = contacto.getNombre().toLowerCase();
-			int contadorVocales = 0;
-			for (int i = 0; i < nombre.length(); i++) {
-				char c = nombre.charAt(i);
-				if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') {
-					contadorVocales++;
-				}
-			}
-			if (contadorVocales == 5) {
-				listaContactos.remove(contacto);
-			}
-		}
-		contactos = listaContactos.toArray(new Contacto[listaContactos.size()]);
-	}
 }

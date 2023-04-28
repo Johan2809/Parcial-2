@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import agenda.exceptions.ContactoException;
 
@@ -20,7 +19,7 @@ public class Agenda implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private String nombre;
 	private Contacto[] listaContactos;
-	private Grupo[] listaGrupos;
+	public Grupo[] listaGrupos;
 	private Reunion[] listaReuniones;
 	private Nota[] listaNotas;
 
@@ -137,7 +136,8 @@ public class Agenda implements Serializable {
 		if (contacto.isPresent()) {
 			return "Telefono de " + nombre + ": " + contacto.get().getTelefono();
 		}
-		// Si no se encuentra el contacto, se devuelve un mensaje indicando que no
+		// Si no se encuentra el contacto, se devuelve un mensaje indicando que
+		// no
 		// se encontro
 		else {
 			return "No se encontro el contacto.";
@@ -172,65 +172,63 @@ public class Agenda implements Serializable {
 		return (int) Arrays.stream(listaContactos).filter(Objects::isNull).count();
 	}
 
-//-------------------------------------PARCIAL------------------------------------------------------
-//PUNTO 1:obtener un arreglo de  String con las palabras que cumplan las siguientes condiocnes.
-//	se debe  Implementar un método en la clase Nota que busque todas las palabras de un comentario
-// que empiecen con una determinada letra. El método debe recibir como parámetro la letra a buscar
-//	y devolver una lista con las palabras encontradas.
+	// -------------------------------------PARCIAL------------------------------------------------------
+	// PUNTO 1:	obtener un arreglo de String con las palabras que cumplan las
+	// siguientes condiocnes.
+	// se debe Implementar un método en la clase Nota que busque todas las
+	// palabras de un comentario
+	// que empiecen con una determinada letra. El método debe recibir como
+	// parámetro la letra a buscar
+	// y devolver una lista con las palabras encontradas.
 
-
-//PUNTO 2: Crea un método que reciba como parámetro un objeto Grupo
-//	y que devuelva una lista de contactos que pertenezcan a ese grupo
-	public List<Contacto> filtrarPorGrupo(Grupo grupo) {
-	    Contacto[]contactos = listaContactos;
-	    List<Contacto> contactosDelGrupo =  Arrays.stream(listaContactos)
-	        .filter(contacto -> getListaGrupos().contains(grupo))
-	        .collect(Collectors.toList());
-	    return contactosDelGrupo;
+	public List<String> buscarPalabrasPorLetra(char letra) {
+		List<String> palabrasEncontradas = new ArrayList<>();
+		for (Nota nota : this.listaNotas) {
+			palabrasEncontradas.addAll(nota.buscarPalabrasPorLetra(letra));
+		}
+		return palabrasEncontradas;
 	}
 
-//PUNTO 3: Realizar las operaciones necesarias para retornar una matriz
-//		con las notas cada fila representa un conjunto de notas
+	// PUNTO 2: Crea un método que reciba como parámetro un objeto Grupo
+	// y que devuelva una lista de contactos que pertenezcan a ese grupo
 
-	public Nota[][] obtenerNotas() {
-	    // Crear una matriz de Notas de tamaño 3xN
+	public List<Contacto> filtrarPorGrupo(Grupo grupo) {
+	    return Arrays.stream(listaContactos)
+	            .filter(contacto -> Arrays.asList(contacto.getListaGrupos()).contains(grupo))
+	            .collect(Collectors.toList());
+	}
+
+	// PUNTO 3: Realizar las operaciones necesarias para retornar una matriz
+	// con las notas cada fila representa un conjunto de notas
+	public Nota[][] obtenerNotasMatriz() {
 	    Nota[][] notas = new Nota[3][listaNotas.length];
-	    // Inicializar todos los elementos de la matriz con objetos de tipo
-	    // Nota
-	    for (int i = 0; i < 3; i++) {
-	        for (int j = 0; j < listaNotas.length; j++) {
-	            notas[i][j] = new Nota("", "", null, null);
-	        }
-	    }
-	    // Iterar sobre todas las notas de la agenda y agregarlas a la
-	    // matriz por fecha
+	    int[] contadorFilas = new int[3];
 	    for (int i = 0; i < listaNotas.length; i++) {
-	        // Obtener la fecha de la nota como una cadena de texto
 	        String fechaNota = listaNotas[i].getFecha();
-
-	        // Agregar la nota a la fila correspondiente según su fecha
 	        if (fechaNota.compareTo("01-11-2022") >= 0 && fechaNota.compareTo("30-11-2022") <= 0) {
 	            // Agregar la nota a la fila 0
-	            notas[0][i] = listaNotas[i];
+	            notas[0][contadorFilas[0]] = listaNotas[i];
+	            contadorFilas[0]++;
 	        } else if (fechaNota.compareTo("01-12-2022") >= 0 && fechaNota.compareTo("31-12-2022") <= 0) {
 	            // Agregar la nota a la fila 1
-	            notas[1][i] = listaNotas[i];
+	            notas[1][contadorFilas[1]] = listaNotas[i];
+	            contadorFilas[1]++;
 	        } else {
 	            // Agregar la nota a la fila 2
-	            notas[2][i] = listaNotas[i];
+	            notas[2][contadorFilas[2]] = listaNotas[i];
+	            contadorFilas[2]++;
 	        }
 	    }
-	    // Devolver la matriz con las notas separadas por fecha
 	    return notas;
 	}
 
-//PUNTO 4:Buscar todos los contactos que tengan un número de teléfono que comience
-//		con un determinado prefijo. El método debe recibir como parámetro un String con el prefijo
-//		y devolver una lista de grupos con los contactos encontrados .
-			public List<Contacto> obtenerContactosPorPrefijo(String prefijo) {
-			    List<Contacto> contactosConPrefijo= Arrays.stream(listaContactos)
-			        .filter(contacto -> contacto.getTelefono().startsWith(prefijo))
-			        .collect(Collectors.toList());
-			    return contactosConPrefijo;
-			}
+	// PUNTO 4:Buscar todos los contactos que tengan un número de teléfono que
+	// comience con un determinado prefijo. El método debe recibir como parámetro un
+	// String con el prefijO y devolver una lista de grupos con los contactos encontrados .
+
+	public List<Contacto> obtenerContactosPorPrefijo(String prefijo) {
+		List<Contacto> contactosConPrefijo = Arrays.stream(listaContactos)
+				.filter(contacto -> contacto.getTelefono().startsWith(prefijo)).collect(Collectors.toList());
+		return contactosConPrefijo;
+	}
 }

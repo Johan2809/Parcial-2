@@ -1,14 +1,10 @@
 package agenda.model;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 public class Grupo {
     private String nombre;
     private Categoria categoria;
     private Contacto[] listaContactos;
+
 
     public Grupo(String nombre, Categoria categoria) {
         this.nombre = nombre;
@@ -59,6 +55,6 @@ public class Grupo {
         }
         return false;
     }
-//-----------------------------------------------PARCIAL------------------------------------------------------------
+
 
 }
